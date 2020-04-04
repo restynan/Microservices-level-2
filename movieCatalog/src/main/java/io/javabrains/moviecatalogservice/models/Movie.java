@@ -3,11 +3,24 @@ package io.javabrains.moviecatalogservice.models;
 public class Movie {
     private String movieId;
     private String name;
-    public Movie(){}
+    private String description;
 
-    public Movie(String movieId, String name) {
+    public Movie(){
+
+    }
+
+    public Movie(String movieId, String name, String description) {
         this.movieId = movieId;
         this.name = name;
+        this.description = description;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public String getMovieId() {

@@ -1,9 +1,12 @@
 package io.javabrains.moviecatalogservice.controller;
 
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import io.javabrains.moviecatalogservice.models.CatalogItem;
 import io.javabrains.moviecatalogservice.models.Movie;
 import io.javabrains.moviecatalogservice.models.Rating;
 import io.javabrains.moviecatalogservice.models.UserRating;
+import io.javabrains.moviecatalogservice.services.MovieInfo;
+import io.javabrains.moviecatalogservice.services.MovieRating;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,25 +22,34 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/catalog")
 public class catalogController {
-    @Autowired
-    RestTemplate restTemplate;
+
     @Autowired
     WebClient.Builder webClientBuilder;
+    @Autowired
+   private  MovieInfo movieInfo ;
+    @Autowired
+   private  MovieRating movieRating;
 
 
     @RequestMapping("/{userId}")
     public List<CatalogItem> getCatalog(@PathVariable("userId") String userId){
 
-UserRating ratings= restTemplate.getForObject("http://movie-rating-service/rating/users/"+ userId, UserRating.class)
-;
-        return ratings.getUserRating().stream().map(rating->{
-        Movie movie = restTemplate.getForObject("http://movie-info-service/movies/"+rating.getMovieId(), Movie.class);
+UserRating ratings= movieRating.getUserRatings(userId);
 
-            return new CatalogItem(movie.getName(),"reality TV show",rating.getRating());
-        }).collect(Collectors.toList());
+        return ratings.getUserRating().stream()
+                .map(movieInfo::getCatalogItem)
+                .collect(Collectors.toList());
+
+    }
 
 
 
+
+
+
+
+
+    }
 
 /*  Movie movie = webClientBuilder.build()
                            .get()
@@ -45,6 +57,3 @@ UserRating ratings= restTemplate.getForObject("http://movie-rating-service/ratin
                     .retrieve()
                     .bodyToMono(Movie.class)
                     .block();*/
-    }
-}
-
